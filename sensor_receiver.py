@@ -36,8 +36,8 @@ class sensor_receiver():
         print("Socket bound successfully")
 
         self.running = True
-        self.daemon = threading.Thread(target=self.daemon_loop)
-        self.daemon.start()
+        self.receiveDaemon = threading.Thread(target=self.daemon_loop)
+        self.receiveDaemon.start()
 
 
 
@@ -46,7 +46,7 @@ class sensor_receiver():
     # Stop loop and close the socket
     def stopLoop(self):
         self.running = False
-        self.daemon.join()
+        self.receiveDaemon.join()
         self.s.close()
 
 
