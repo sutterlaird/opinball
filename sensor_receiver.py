@@ -1,4 +1,4 @@
-import socket, traceback, threading
+import socket, traceback, threading, select, json
 from numpy import interp
 from Pinspots import Pinspots
 
@@ -31,8 +31,7 @@ class sensor_receiver():
         self.pinNumber = pinNumber
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.s.settimeout(2)
         self.s.bind((self.host, self.port))
         print("Socket bound successfully")
 
@@ -56,14 +55,17 @@ class sensor_receiver():
 
     def daemon_loop(self):
         while self.running:
-            message, address = self.s.recvfrom(8192)
-            messageString = message.decode("utf-8")
-            valSplit = messageString.split(",")
-            self.xPos = float(valSplit[2])
-            self.yPos = float(valSplit[3])
+            try:
+                message, address = self.s.recvfrom(8192)
+                values = json.loads(message.decode("utf-8"))
 
-            panVal = interp(self.xPos, [-10,10], [64,192])
-            tiltVal = interp(self.yPos, [-10,10], [64,192])
+                self.xPos = values["accelerometerAccelerationX"]
+                self.yPos = values["accelerometerAccelerationY"]
 
-            self.pinspots.setPan(self.pinNumber, int(panVal))
-            self.pinspots.setTilt(self.pinNumber, int(tiltVal))
+                panVal = interp(self.xPos, [-1,1], [64,192])
+                tiltVal = interp(self.yPos, [-1,1], [64,192])
+
+                self.pinspots.setPan(self.pinNumber, int(panVal))
+                self.pinspots.setTilt(self.pinNumber, int(tiltVal))
+            except:
+                print("Receive timeout")
