@@ -1,16 +1,17 @@
 from PyQt5.QtWidgets import QPushButton, QFileDialog, QMessageBox
 from PyQt5.QtCore import Qt
 from SensorDialog import SensorDialog
+from Pinspots import Pinspots
 
 
 
 
 
 class StopButton(QPushButton):
-    def __init__(self, pinspotWorld, buttonlist, callback):
+    def __init__(self, buttonlist, callback):
         super().__init__()
         self.callback = callback
-        self.pinspots = pinspotWorld
+        self.pinspots = Pinspots.getPinspotWorld()
         self.buttons = buttonlist
         self.setText("Stop All")
         self.clicked.connect(self.onGoClicked)
@@ -35,9 +36,9 @@ class StopButton(QPushButton):
 # SaveShowButton creates a Save Show button that opens a file chooser
 # and allows the user to save the show
 class SaveShowButton(QPushButton):
-    def __init__(self, pinspotWorld):
+    def __init__(self):
         super().__init__()
-        self.pinspots = pinspotWorld
+        self.pinspots = Pinspots.getPinspotWorld()
         self.setText("Save Show")
         self.clicked.connect(self.onSaveClicked)
         self.setAutoDefault(False)
@@ -59,9 +60,9 @@ class SaveShowButton(QPushButton):
 
 
 class LoadShowButton(QPushButton):
-    def __init__(self, pinspotWorld):
+    def __init__(self):
         super().__init__()
-        self.pinspots = pinspotWorld
+        self.pinspots = Pinspots.getPinspotWorld()
         self.setText("Load Show")
         self.clicked.connect(self.onLoadClicked)
         self.setAutoDefault(False)
@@ -156,10 +157,10 @@ class SingleMultiButton(QPushButton):
 
 
 class AutoTargetButton(QPushButton):
-    def __init__(self, pinspotWorld, buttonList):
+    def __init__(self, buttonList):
         super().__init__()
         self.buttons = buttonList
-        self.pinspots = pinspotWorld
+        self.pinspots = Pinspots.getPinspotWorld()
         self.setText("AutoTarget")
         self.clicked.connect(self.onTargetClicked)
         self.setAutoDefault(False)
@@ -188,10 +189,10 @@ class AutoTargetButton(QPushButton):
 
 
 class PhoneControlButton(QPushButton):
-    def __init__(self, pinspotWorld, buttonList):
+    def __init__(self, buttonList):
         super().__init__()
         self.buttons = buttonList
-        self.pinspots = pinspotWorld
+        self.pinspots = Pinspots.getPinspotWorld()
         self.setText("Sensor Control")
         self.clicked.connect(self.onTargetClicked)
         self.setAutoDefault(False)

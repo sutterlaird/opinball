@@ -17,7 +17,6 @@ class GenericControlFader(QVBoxLayout):
 
         # Create label for slider
         faderLabel = QLabel(self.sliderType.title())
-        # faderLabel.setFixedWidth(70)
         self.addWidget(faderLabel)
 
         # Create Max Button for slider
