@@ -21,9 +21,6 @@ class SensorDialog(QDialog):
         layout.addWidget(self.message)
         self.setLayout(layout)
 
-        btn = self.buttonBox.button(QDialogButtonBox.Ok) 
-        btn.setEnabled(False)
-
         self.startStopButton = QPushButton("Start")
         self.startStopButton.setCheckable(True)
         self.startStopButton.clicked.connect(self.sensorControl)
