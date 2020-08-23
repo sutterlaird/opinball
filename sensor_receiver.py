@@ -12,7 +12,6 @@ class sensor_receiver():
     running = False
     xPos = 0.0
     yPos = 0.0
-    daemon = None
 
 
 
@@ -27,7 +26,7 @@ class sensor_receiver():
 
 
     # Initalize and bind the socket, then start the loop
-    def start(self, pinNumber):
+    def startLoop(self, pinNumber):
         self.pinspots = Pinspots.getPinspotWorld()
         self.pinNumber = pinNumber
 
@@ -46,7 +45,7 @@ class sensor_receiver():
 
 
     # Stop loop and close the socket
-    def stop(self):
+    def stopLoop(self):
         self.running = False
         self.daemon.join()
         self.s.close()

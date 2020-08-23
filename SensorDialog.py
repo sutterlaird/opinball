@@ -38,9 +38,9 @@ class SensorDialog(QDialog):
             self.startStopButton.setText("Stop")
             self.startStopButton.repaint()
             # Start receiver daemon
-            receiver.start(self.currentPin)
+            receiver.startLoop(self.currentPin)
 
         else:
             self.startStopButton.setText("Start")
-            receiver.stop()
+            receiver.stopLoop()
             self.startStopButton.repaint()
