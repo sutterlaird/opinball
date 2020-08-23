@@ -3,20 +3,19 @@ from PyQt5.QtCore import Qt
 from ControlFader import GenericControlFader, ColorControlFader
 
 class ControlsLayout(QHBoxLayout):
-    def __init__(self, pinspotWorld, buttons):
+    def __init__(self, buttons):
         super().__init__()
-        self.pinspots = pinspotWorld
         self.buttonList = buttons
 
-        self.intensityFader = GenericControlFader(pinspotWorld, buttons, "intensity")
+        self.intensityFader = GenericControlFader(buttons, "intensity")
         self.addLayout(self.intensityFader)
-        self.panFader = GenericControlFader(pinspotWorld, buttons, "pan")
+        self.panFader = GenericControlFader(buttons, "pan")
         self.addLayout(self.panFader)
-        self.tiltFader = GenericControlFader(pinspotWorld, buttons, "tilt")
+        self.tiltFader = GenericControlFader(buttons, "tilt")
         self.addLayout(self.tiltFader)
-        self.zoom = GenericControlFader(pinspotWorld, buttons, "zoom")
+        self.zoom = GenericControlFader(buttons, "zoom")
         self.addLayout(self.zoom)
-        self.colorFaders = ColorControlFader(pinspotWorld, buttons)
+        self.colorFaders = ColorControlFader(buttons)
         self.addLayout(self.colorFaders)
 
     def zero(self):

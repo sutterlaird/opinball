@@ -41,7 +41,7 @@ for x in range(pinspotWorld.numPinspots):
 
 # Create grid layout for room map
 grid = FixtureButtonLayout(buttonList)
-controls = ControlsLayout(pinspotWorld, buttonList)
+controls = ControlsLayout(buttonList)
 
 # Create vertical layout for elements
 verticalLayout = QVBoxLayout()

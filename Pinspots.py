@@ -3,6 +3,8 @@ import time
 import random
 import os
 
+'''Pinspots implements a Singleton pattern. getPinspotWorld() can be called from anywhere'''
+
 class Pinspots:
 
     instance = None
@@ -78,6 +80,8 @@ class Pinspots:
             self.universe2status[offsets["intensity"]] = newIntensityValue
         # Commit changes
         self.update()
+        # Debug print
+        print("Intensity of fixture " + str(fixtureNum) + " changed to " + str(newIntensityValue))
 
 
 
@@ -94,6 +98,8 @@ class Pinspots:
             self.universe2status[offsets["pan"]] = newPanValue
         # Commit changes
         self.update()
+        # Debug print
+        print("Pan of fixture " + str(fixtureNum) + " changed to " + str(newPanValue))
 
 
 
@@ -110,6 +116,8 @@ class Pinspots:
             self.universe2status[offsets["tilt"]] = newTiltValue
         # Commit changes
         self.update()
+        # Debug print
+        print("Tilt of fixture " + str(fixtureNum) + " changed to " + str(newTiltValue))
 
 
 
@@ -126,6 +134,8 @@ class Pinspots:
             self.universe2status[offsets["zoom"]] = newZoomValue
         # Commit changes
         self.update()
+        # Debug print
+        print("Zoom of fixture " + str(fixtureNum) + " changed to " + str(newZoomValue))
 
 
     
