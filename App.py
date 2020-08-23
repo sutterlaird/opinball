@@ -13,7 +13,7 @@ window.setStyleSheet(open("style.qss", "r").read())
 window.setWindowTitle("Sutter's Pinspot Controller")
 
 # Create pinspot model
-pinspotWorld = Pinspots()
+pinspotWorld = Pinspots.getPinspotWorld()
 
 
 

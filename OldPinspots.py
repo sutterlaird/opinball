@@ -5,34 +5,20 @@ import os
 
 class Pinspots:
 
-    instance = None
-
-
-    @staticmethod
-    def getPinspotWorld():
-        if Pinspots.instance == None:
-            Pinspots()
-        return self.instance
-
 
 
 
 
     def __init__(self, *args, **kwargs):
-        if Pinspots.instance != None:
-            raise Exception("Error: Class is Singleton - Use getPinspotWorld()")
-        else:
-            Pinspots.instance = self
         super().__init__(*args, **kwargs)
-
-        # Important constants - THESE WILL COME FROM CONFIG EVENTUALLY
+        # Important constants
         self.numPinspots = 48
         self.bytesPerPacket = 512    # each byte is one DMX channel
         self.bytesPerFixture = 21    # each ZCL360i in extended mode has 21 channels of DMX control
         # Create bytearrays for each universe's status
         self.universe1status = bytearray(self.bytesPerPacket)
         self.universe2status = bytearray(self.bytesPerPacket)
-        # Create universes using StupidArtnet(eNode IP Address, universe, packet size) - FROM CONFIG
+        # Create universes using StupidArtnet(eNode IP Address, universe, packet size)
         self.universe1 = StupidArtnet('2.10.10.2', 0, self.bytesPerPacket)
         self.universe2 = StupidArtnet('2.10.10.2', 1, self.bytesPerPacket)
         # Print universes for testing

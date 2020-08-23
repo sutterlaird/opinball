@@ -2,3 +2,4 @@
 sutter_pinspot_vscode.code-workspace
 __pycache__
 lib/__pycache__
+.vscode
