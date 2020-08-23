@@ -12,6 +12,7 @@ class sensor_receiver():
     running = False
     xPos = 0.0
     yPos = 0.0
+    daemon = None
 
 
 
