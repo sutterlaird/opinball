@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QFileDialog, QMessageBox, QDialog, QDialogButtonBox, QVBoxLayout
-from android_receiver import sensor_receiver
+from sensor_receiver import sensor_receiver
 import socket
 
 
