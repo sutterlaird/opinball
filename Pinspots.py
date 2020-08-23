@@ -12,7 +12,7 @@ class Pinspots:
     def getPinspotWorld():
         if Pinspots.instance == None:
             Pinspots()
-        return self.instance
+        return Pinspots.instance
 
 
 
