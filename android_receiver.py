@@ -1,5 +1,6 @@
 import socket, traceback, threading
 from numpy import interp
+from Pinspots import Pinspots
 
 
 
@@ -25,8 +26,8 @@ class android_receiver():
 
 
     # Initalize and bind the socket, then start the loop
-    def start(self, pinspots, pinNumber):
-        self.pinspots = pinspots
+    def start(self, pinNumber):
+        self.pinspots = Pinspots.getPinspotWorld()
         self.pinNumber = pinNumber
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

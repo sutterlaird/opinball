@@ -14,7 +14,7 @@ class SensorDialog(QDialog):
         self.currentPin = currentPin
 
         self.message = QMessageBox()
-        self.message.setText("Press Start to Activate Sensor Control Mode\nServer Address " + str(socket.gethostbyname(socket.gethostname)) + "\nDo Not Press OK")
+        self.message.setText("Press Start to Activate Sensor Control Mode\nDo Not Press OK")
 
         layout = QVBoxLayout()
         layout.addWidget(self.message)
@@ -37,8 +37,8 @@ class SensorDialog(QDialog):
         if self.startStopButton.isChecked() == True:
             self.startStopButton.setText("Stop")
             self.startStopButton.repaint()
-
-            receiver.start(self.pinspots, self.currentPin)
+            # Start receiver daemon
+            receiver.start(self.currentPin)
 
         else:
             self.startStopButton.setText("Start")
