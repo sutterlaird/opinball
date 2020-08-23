@@ -1,4 +1,4 @@
-import socket, traceback, threading, select, json
+import socket, threading, json
 from numpy import interp
 from Pinspots import Pinspots
 

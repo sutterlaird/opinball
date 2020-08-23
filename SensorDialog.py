@@ -12,6 +12,7 @@ class SensorDialog(QDialog):
 
         self.pinspots = pinspotworld
         self.currentPin = currentPin
+        self.receiver = sensor_receiver()
 
         self.message = QMessageBox()
         self.message.setText("Press Start to Activate Sensor Control Mode\nDo Not Press OK")
@@ -32,15 +33,14 @@ class SensorDialog(QDialog):
 
 
     def sensorControl(self):
-        receiver = sensor_receiver()
 
         if self.startStopButton.isChecked() == True:
             self.startStopButton.setText("Stop")
             self.startStopButton.repaint()
             # Start receiver daemon
-            receiver.startLoop(self.currentPin)
+            self.receiver.startLoop(self.currentPin)
 
         else:
             self.startStopButton.setText("Start")
-            receiver.stopLoop()
+            self.receiver.stopLoop()
             self.startStopButton.repaint()
