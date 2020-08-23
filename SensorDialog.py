@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QFileDialog, QMessageBox, QDialog, QDialogButtonBox, QVBoxLayout
-from android_receiver import android_receiver
+from android_receiver import sensor_receiver
 import socket
 
 
@@ -32,7 +32,7 @@ class SensorDialog(QDialog):
 
 
     def sensorControl(self):
-        receiver = android_receiver()
+        receiver = sensor_receiver()
 
         if self.startStopButton.isChecked() == True:
             self.startStopButton.setText("Stop")

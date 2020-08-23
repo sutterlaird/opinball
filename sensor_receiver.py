@@ -6,7 +6,7 @@ from Pinspots import Pinspots
 
 
 
-class android_receiver():
+class sensor_receiver():
     host = ''
     port = 50000
     running = False
@@ -37,7 +37,7 @@ class android_receiver():
         print("Socket bound successfully")
 
         self.running = True
-        self.daemon = threading.Thread(target=self.loop, args=None)
+        self.daemon = threading.Thread(target=self.daemon_loop)
         self.daemon.start()
 
 
@@ -54,7 +54,7 @@ class android_receiver():
 
 
 
-    def loop(self):
+    def daemon_loop(self):
         while self.running:
             message, address = self.s.recvfrom(8192)
             messageString = message.decode("utf-8")
@@ -65,7 +65,5 @@ class android_receiver():
             panVal = interp(self.xPos, [-10,10], [64,192])
             tiltVal = interp(self.yPos, [-10,10], [64,192])
 
-            print("Changing pan of fixture " + str(self.pinNumber) + " to " + str(int(panVal)))
             self.pinspots.setPan(self.pinNumber, int(panVal))
-            print("Changing tilt of fixture " + str(self.pinNumber) + " to " + str(int(tiltVal)))
             self.pinspots.setTilt(self.pinNumber, int(tiltVal))
