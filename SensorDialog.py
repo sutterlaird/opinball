@@ -6,16 +6,15 @@ import socket
 
 class SensorDialog(QDialog):
 
-    def __init__(self, parent, pinspotworld, currentPin):
+    def __init__(self, parent, currentPin):
         super().__init__(parent)
         self.setWindowTitle("Sensor Control Mode")
 
-        self.pinspots = pinspotworld
         self.currentPin = currentPin
         self.receiver = sensor_receiver()
 
         self.message = QMessageBox()
-        self.message.setText("Press Start to Activate Sensor Control Mode\nDo Not Press OK")
+        self.message.setText("Press Start to Activate Sensor Control Mode\nConnect on Port 50000")
 
         layout = QVBoxLayout()
         layout.addWidget(self.message)

@@ -215,5 +215,5 @@ class PhoneControlButton(QPushButton):
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_()
         else:
-            dialog = SensorDialog(self, self.pinspots, checkedButtonNumbers[0])
+            dialog = SensorDialog(self, checkedButtonNumbers[0])
             dialog.show()
