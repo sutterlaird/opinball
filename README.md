@@ -1,6 +1,8 @@
 # OPinBall
 **O**pen **Pin**spot for **Ball**rooms (**OPinBall**) is an open source DMX over Art-Net lighting controller designed to make it easier to pinspot centerpieces for banquet functions in ballrooms. 
 
+![OPinBall Main Screen](media/screenshot.jpg)
+
 ## Features
 - Easy fixture layout mapping.
 - Aim fixtures with smartphone accelerometer.
@@ -24,10 +26,10 @@ To use the AutoTarget feature, place the MacBook Pro at the desired location, se
 - Pre-built binaries.
 
 ## Compatibility
-OPinBall was written for one particular hotel ballroom that is equipped with 48 Elation ZCL-360i fixtures in Extended Mode spread across two DMX universes. Ongoing updates are improving customization and compatibility.
+OPinBall was written for one particular hotel ballroom that is equipped with 48 Elation ZCL-360i fixtures in Extended Mode spread across two DMX universes. Currently, it can support 48 or fewer ZCL-360i fixtures in any desired layout. Ongoing updates are improving customization and compatibility.
 
 ## Requirements
-Any version of Python 3 should work. PyQt5 and Numpy are also required.
+Any version of Python 3 should work. PyQt5 and Numpy are also required. Tested under macOS 10.14 Mojave and Ubuntu 20.04.
 
 ## Credits
 The underlying Art-Net library is **[StupidArtnet](https://github.com/cpvalente/stupidArtnet)**.

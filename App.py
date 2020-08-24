@@ -10,7 +10,7 @@ import time
 app = QApplication([])
 window = QWidget()
 window.setStyleSheet(open("style.qss", "r").read())
-window.setWindowTitle("Sutter's Pinspot Controller")
+window.setWindowTitle("OPinBall")
 
 # Create pinspot model
 pinspotWorld = Pinspots.getPinspotWorld()
@@ -39,7 +39,7 @@ for x in range(pinspotWorld.numPinspots):
     button = FixtureButton(x+1, buttonClick)
     buttonList.append(button)
 
-# Create grid layout for room map
+# Create grid layout for fixture map
 grid = FixtureButtonLayout(buttonList)
 controls = ControlsLayout(buttonList)
 
