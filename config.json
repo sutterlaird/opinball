@@ -1,4 +1,5 @@
 {
+    "numUniverses" : 2,
     "numFixtures" : 48,
     "channelsPerPacket" : 512,
     "channelsPerFixture" : 21,

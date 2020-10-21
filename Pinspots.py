@@ -28,35 +28,37 @@ class Pinspots:
             Pinspots.instance = self
         super().__init__(*args, **kwargs)
 
-        self.config = Config.getConfig()
+        config = Config.getConfig()
 
         # Important constants - currently from config, eventually from fixture profile
-        self.controllerIP = self.config.getConfigVal("enodeIP")
-        self.numPinspots = self.config.getConfigVal("numFixtures")
-        self.bytesPerPacket = self.config.getConfigVal("channelsPerPacket")
-        self.bytesPerFixture = self.config.getConfigVal("channelsPerFixture")
-        self.fixturesPerUniverse = self.config.getConfigVal("fixturesPerUniverse")
-        self.channelMin = self.config.getConfigVal("channelMin")
-        self.channelMax = self.config.getConfigVal("channelMax")
+        self.controllerIP = config["enodeIP"]
+        self.numUniverses = config["numUniverses"]
+        self.numPinspots = config["numFixtures"]
+        self.bytesPerPacket = config["channelsPerPacket"]
+        self.bytesPerFixture = config["channelsPerFixture"]
+        self.fixturesPerUniverse = config["fixturesPerUniverse"]
+        self.channelMin = config["channelMin"]
+        self.channelMax = config["channelMax"]
 
         # Create bytearrays for each universe's status
-        self.universe1status = bytearray(self.bytesPerPacket)
-        self.universe2status = bytearray(self.bytesPerPacket)
+        self.universe_arrays = list()
+        for x in range(self.numUniverses):
+            self.universe_arrays.append(bytearray(self.bytesPerPacket))
 
         # Create universes using StupidArtnet(eNode IP Address, universe, packet size)
-        self.universe1 = StupidArtnet(self.controllerIP, 0, self.bytesPerPacket)
-        self.universe2 = StupidArtnet(self.controllerIP, 1, self.bytesPerPacket)
+        self.universes = list()
+        for x in range(self.numUniverses):
+            self.universes.append(StupidArtnet(self.controllerIP, x, self.bytesPerPacket))
 
-        # Print universes for testing
-        print(self.universe1)
-        print(self.universe2)
+            # Print universe for testing
+            print(self.universes[x])
 
-        # Set all lights to zero using reset method
+            # Start universe
+            self.universes[x].start()
+
+        # Reset lights
         self.reset()
 
-        # Start threads for each universe
-        self.universe1.start()
-        self.universe2.start()
 
 
 
@@ -65,8 +67,8 @@ class Pinspots:
     def __del__(self):
         # Reset lights and stop threads for both universes
         self.reset()
-        self.universe1.stop()
-        self.universe2.stop()
+        for x in range(self.numUniverses):
+            self.universes[x].stop()
 
 
 
@@ -74,8 +76,8 @@ class Pinspots:
 
     def update(self):
         # Set each universe with the current status array
-        self.universe1.set(self.universe1status)
-        self.universe2.set(self.universe2status)
+        for x in range(self.numUniverses):
+            self.universes[x].set(self.universe_arrays[x])
 
 
 
@@ -85,12 +87,12 @@ class Pinspots:
         # If fixture is in universe 1
         if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe1status[offsets["intensity"]] = newIntensityValue
+            self.universe_arrays[0][offsets["intensity"]] = newIntensityValue
 
         # Otherwise fixture is in universe 2
         else:
             offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe2status[offsets["intensity"]] = newIntensityValue
+            self.universe_arrays[1][offsets["intensity"]] = newIntensityValue
         # Commit changes
         self.update()
         # Debug print
@@ -104,12 +106,12 @@ class Pinspots:
         # If fixture is in universe 1
         if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe1status[offsets["pan"]] = newPanValue
+            self.universe_arrays[0][offsets["pan"]] = newPanValue
 
         # Otherwise fixture is in universe 2
         else:
             offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe2status[offsets["pan"]] = newPanValue
+            self.universe_arrays[1][offsets["pan"]] = newPanValue
         # Commit changes
         self.update()
         # Debug print
@@ -123,12 +125,12 @@ class Pinspots:
         # If fixture is in universe 1
         if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe1status[offsets["tilt"]] = newTiltValue
+            self.universe_arrays[0][offsets["tilt"]] = newTiltValue
 
         # Otherwise fixture is in universe 2
         else:
             offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe2status[offsets["tilt"]] = newTiltValue
+            self.universe_arrays[1][offsets["tilt"]] = newTiltValue
         # Commit changes
         self.update()
         # Debug print
@@ -142,12 +144,12 @@ class Pinspots:
         # If fixture is in universe 1
         if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe1status[offsets["zoom"]] = newZoomValue
+            self.universe_arrays[0][offsets["zoom"]] = newZoomValue
 
         # Otherwise fixture is in universe 2
         else:
             offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe2status[offsets["zoom"]] = newZoomValue
+            self.universe_arrays[1][offsets["zoom"]] = newZoomValue
         # Commit changes
         self.update()
         # Debug print
@@ -161,18 +163,18 @@ class Pinspots:
         # If fixture is in universe 1
         if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe1status[offsets["red"]] = newRedValue
-            self.universe1status[offsets["green"]] = newGreenValue
-            self.universe1status[offsets["blue"]] = newBlueValue
-            self.universe1status[offsets["white"]] = newWhiteValue
+            self.universe_arrays[0][offsets["red"]] = newRedValue
+            self.universe_arrays[0][offsets["green"]] = newGreenValue
+            self.universe_arrays[0][offsets["blue"]] = newBlueValue
+            self.universe_arrays[0][offsets["white"]] = newWhiteValue
 
         # Otherwise fixture is in universe 2
         else:
             offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe2status[offsets["red"]] = newRedValue
-            self.universe2status[offsets["green"]] = newGreenValue
-            self.universe2status[offsets["blue"]] = newBlueValue
-            self.universe2status[offsets["white"]] = newWhiteValue
+            self.universe_arrays[1][offsets["red"]] = newRedValue
+            self.universe_arrays[1][offsets["green"]] = newGreenValue
+            self.universe_arrays[1][offsets["blue"]] = newBlueValue
+            self.universe_arrays[1][offsets["white"]] = newWhiteValue
         # Commit changes
         self.update()
 
@@ -213,20 +215,21 @@ class Pinspots:
     def reset(self):
         # Populate both status arrays with zeros (lights are off)
         for x in range(self.bytesPerPacket):
-            self.universe1status[x] = self.channelMin
-            self.universe2status[x] = self.channelMin
+            self.universe_arrays[0][x] = self.channelMin
+            self.universe_arrays[1][x] = self.channelMin
 
         # All values are reasonable when set to zero except shutter,
         # which will close the shutter. Open all shutters by setting to self.channelMax
         shutterIndex = 11
         while shutterIndex < (self.numPinspots/2)*self.bytesPerFixture:
-            self.universe1status[shutterIndex] = self.channelMax
-            self.universe2status[shutterIndex] = self.channelMax
+            self.universe_arrays[0][shutterIndex] = self.channelMax
+            self.universe_arrays[1][shutterIndex] = self.channelMax
             shutterIndex += self.bytesPerFixture
 
         # Send settings to lights
-        self.universe1.set(self.universe1status)
-        self.universe2.set(self.universe2status)
+        for x in range(self.numUniverses):
+            self.universes[x].set(self.universe_arrays[x])
+
 
 
 
@@ -264,21 +267,21 @@ class Pinspots:
 
 
     def getUniverse1Status(self):
-        return self.universe1status
+        return self.universe_arrays[0]
 
 
 
 
 
     def getUniverse2Status(self):
-        return self.universe2status
+        return self.universe_arrays[1]
 
 
 
 
 
     def setUniverse1Status(self, universe1new):
-        self.universe1status = universe1new
+        self.universe_arrays[0] = universe1new
         self.update()
         print("successfully loaded universe 1")
 
@@ -287,6 +290,6 @@ class Pinspots:
 
 
     def setUniverse2Status(self, universe2new):
-        self.universe2status = universe2new
+        self.universe_arrays[1] = universe2new
         self.update()
         print("successfully loaded universe 2")

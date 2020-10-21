@@ -14,4 +14,4 @@ from Config import Config
 
 config = Config.getConfig()
 
-print(config.getConfigVal("numFixtures"))
+print(config["numFixtures"])

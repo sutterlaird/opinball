@@ -21,17 +21,28 @@ class Config:
         super().__init__(*args, **kwargs)
 
         with open("config.json") as configFile:
-            self.config_dict = json.load(configFile)
-
-
-
-    
-    def getConfigVal(self, setting):
-        return self.config_dict[setting]
+            Config.config_dict = json.load(configFile)
 
 
 
 
-    def printConfig(self):
-        print(self.config_dict)
+    @staticmethod
+    def getConfigVal(setting):
+        if Config.instance == None:
+            Config()
+        return Config.config_dict[setting]
+
+
+    # @staticmethod
+    def __getitem__(self, key):
+        # if Config.instance == None:
+        #     Config()
+        return Config.config_dict[key]
+
+
+
+
+    @staticmethod
+    def printConfig():
+        print(Config.config_dict)
 
