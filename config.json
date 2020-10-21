@@ -1,0 +1,9 @@
+{
+    "numFixtures" : 48,
+    "channelsPerPacket" : 512,
+    "channelsPerFixture" : 21,
+    "fixturesPerUniverse" : 24,
+    "enodeIP" : "2.10.10.2",
+    "channelMin" : 0,
+    "channelMax" : 255
+}

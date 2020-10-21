@@ -1,4 +1,5 @@
 from lib.StupidArtnet import StupidArtnet
+from Config import Config
 import time
 import random
 import os
@@ -27,21 +28,32 @@ class Pinspots:
             Pinspots.instance = self
         super().__init__(*args, **kwargs)
 
-        # Important constants - THESE WILL COME FROM CONFIG EVENTUALLY
-        self.numPinspots = 48
-        self.bytesPerPacket = 512    # each byte is one DMX channel
-        self.bytesPerFixture = 21    # each ZCL360i in extended mode has 21 channels of DMX control
+        self.config = Config.getConfig()
+
+        # Important constants - currently from config, eventually from fixture profile
+        self.controllerIP = self.config.getConfigVal("enodeIP")
+        self.numPinspots = self.config.getConfigVal("numFixtures")
+        self.bytesPerPacket = self.config.getConfigVal("channelsPerPacket")
+        self.bytesPerFixture = self.config.getConfigVal("channelsPerFixture")
+        self.fixturesPerUniverse = self.config.getConfigVal("fixturesPerUniverse")
+        self.channelMin = self.config.getConfigVal("channelMin")
+        self.channelMax = self.config.getConfigVal("channelMax")
+
         # Create bytearrays for each universe's status
         self.universe1status = bytearray(self.bytesPerPacket)
         self.universe2status = bytearray(self.bytesPerPacket)
-        # Create universes using StupidArtnet(eNode IP Address, universe, packet size) - FROM CONFIG
-        self.universe1 = StupidArtnet('2.10.10.2', 0, self.bytesPerPacket)
-        self.universe2 = StupidArtnet('2.10.10.2', 1, self.bytesPerPacket)
+
+        # Create universes using StupidArtnet(eNode IP Address, universe, packet size)
+        self.universe1 = StupidArtnet(self.controllerIP, 0, self.bytesPerPacket)
+        self.universe2 = StupidArtnet(self.controllerIP, 1, self.bytesPerPacket)
+
         # Print universes for testing
         print(self.universe1)
         print(self.universe2)
+
         # Set all lights to zero using reset method
         self.reset()
+
         # Start threads for each universe
         self.universe1.start()
         self.universe2.start()
@@ -71,12 +83,13 @@ class Pinspots:
 
     def setIntensity(self, fixtureNum, newIntensityValue):
         # If fixture is in universe 1
-        if fixtureNum < 24:
+        if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
             self.universe1status[offsets["intensity"]] = newIntensityValue
+
         # Otherwise fixture is in universe 2
         else:
-            offsets = self.getOffsetsForFixture(fixtureNum-24)
+            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
             self.universe2status[offsets["intensity"]] = newIntensityValue
         # Commit changes
         self.update()
@@ -89,12 +102,13 @@ class Pinspots:
 
     def setPan(self, fixtureNum, newPanValue):
         # If fixture is in universe 1
-        if fixtureNum < 24:
+        if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
             self.universe1status[offsets["pan"]] = newPanValue
+
         # Otherwise fixture is in universe 2
         else:
-            offsets = self.getOffsetsForFixture(fixtureNum-24)
+            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
             self.universe2status[offsets["pan"]] = newPanValue
         # Commit changes
         self.update()
@@ -107,12 +121,13 @@ class Pinspots:
 
     def setTilt(self, fixtureNum, newTiltValue):
         # If fixture is in universe 1
-        if fixtureNum < 24:
+        if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
             self.universe1status[offsets["tilt"]] = newTiltValue
+
         # Otherwise fixture is in universe 2
         else:
-            offsets = self.getOffsetsForFixture(fixtureNum-24)
+            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
             self.universe2status[offsets["tilt"]] = newTiltValue
         # Commit changes
         self.update()
@@ -125,12 +140,13 @@ class Pinspots:
 
     def setZoom(self, fixtureNum, newZoomValue):
         # If fixture is in universe 1
-        if fixtureNum < 24:
+        if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
             self.universe1status[offsets["zoom"]] = newZoomValue
+
         # Otherwise fixture is in universe 2
         else:
-            offsets = self.getOffsetsForFixture(fixtureNum-24)
+            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
             self.universe2status[offsets["zoom"]] = newZoomValue
         # Commit changes
         self.update()
@@ -143,15 +159,16 @@ class Pinspots:
 
     def setColor(self, fixtureNum, newRedValue, newGreenValue, newBlueValue, newWhiteValue):
         # If fixture is in universe 1
-        if fixtureNum < 24:
+        if fixtureNum < self.fixturesPerUniverse:
             offsets = self.getOffsetsForFixture(fixtureNum)
             self.universe1status[offsets["red"]] = newRedValue
             self.universe1status[offsets["green"]] = newGreenValue
             self.universe1status[offsets["blue"]] = newBlueValue
             self.universe1status[offsets["white"]] = newWhiteValue
+
         # Otherwise fixture is in universe 2
         else:
-            offsets = self.getOffsetsForFixture(fixtureNum-24)
+            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
             self.universe2status[offsets["red"]] = newRedValue
             self.universe2status[offsets["green"]] = newGreenValue
             self.universe2status[offsets["blue"]] = newBlueValue
@@ -174,7 +191,7 @@ class Pinspots:
             self.setTilt(fixtureNum, currentTilt)
             print("Setting tilt to " + str(currentTilt))
             # Increment through pan values in steps of 7
-            for pan in range(1,256,int(7 + 0.25*(currentTilt-63))):
+            for pan in range(1, 256, int(7 + 0.25 * (currentTilt - 63))):
                 self.setPan(fixtureNum, pan)
                 print("Setting pan to " + str(pan))
                 time.sleep(.5)
@@ -196,15 +213,15 @@ class Pinspots:
     def reset(self):
         # Populate both status arrays with zeros (lights are off)
         for x in range(self.bytesPerPacket):
-            self.universe1status[x] = 0
-            self.universe2status[x] = 0
+            self.universe1status[x] = self.channelMin
+            self.universe2status[x] = self.channelMin
 
         # All values are reasonable when set to zero except shutter,
-        # which will close the shutter. Open all shutters by setting to 255
+        # which will close the shutter. Open all shutters by setting to self.channelMax
         shutterIndex = 11
         while shutterIndex < (self.numPinspots/2)*self.bytesPerFixture:
-            self.universe1status[shutterIndex] = 255
-            self.universe2status[shutterIndex] = 255
+            self.universe1status[shutterIndex] = self.channelMax
+            self.universe2status[shutterIndex] = self.channelMax
             shutterIndex += self.bytesPerFixture
 
         # Send settings to lights
@@ -216,10 +233,10 @@ class Pinspots:
 
 
     # percentToByte takes in a percentage (0-100 inclusive)
-    # and returns the corresponding value in (0-255 inclusive)
+    # and returns the corresponding value in (channelMin-channelMax inclusive)
     def percentToByte(self, percent):
         percentAsFloat = float(percent/100)
-        return int(percentAsFloat*255)
+        return int(percentAsFloat * self.channelMax)
 
 
 
