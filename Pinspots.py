@@ -1,8 +1,6 @@
 from lib.StupidArtnet import StupidArtnet
 from Config import Config
-import time
-import random
-import os
+import time, random, os, json
 
 '''Pinspots implements a Singleton pattern. getPinspotWorld() can be called from anywhere'''
 
@@ -30,15 +28,17 @@ class Pinspots:
 
         config = Config.getConfig()
 
+        # Get channels for fixture
+        with open("profiles/" + config["fixtureType"] + ".json", 'r') as p:
+            self.profile = json.load(p)
+
         # Important constants - currently from config, eventually from fixture profile
         self.controllerIP = config["enodeIP"]
         self.numUniverses = config["numUniverses"]
         self.numPinspots = config["numFixtures"]
         self.bytesPerPacket = config["channelsPerPacket"]
-        self.bytesPerFixture = config["channelsPerFixture"]
+        self.bytesPerFixture = self.profile["channelCount"]
         self.fixturesPerUniverse = config["fixturesPerUniverse"]
-        self.channelMin = config["channelMin"]
-        self.channelMax = config["channelMax"]
 
         # Create bytearrays for each universe's status
         self.universe_arrays = list()
@@ -83,187 +83,126 @@ class Pinspots:
 
 
 
-    def setIntensity(self, fixtureNum, newIntensityValue):
-        # If fixture is in universe 1
-        if fixtureNum < self.fixturesPerUniverse:
-            offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe_arrays[0][offsets["intensity"]] = newIntensityValue
+    def setLight(self, fixtureNum, attribute, newValue):
+        # universeIndex is the index into the universes list that defines
+        # which universe the fixture is in
+        universeIndex = int((fixtureNum - 1) / self.fixturesPerUniverse)
 
-        # Otherwise fixture is in universe 2
-        else:
-            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe_arrays[1][offsets["intensity"]] = newIntensityValue
-        # Commit changes
-        self.update()
+        # The offset into the universe's array is the first channel of the
+        # fixture plus the channel offset from the fixture profile
+        offset = (((fixtureNum - 1) * self.bytesPerFixture) + (self.profile["channels"][attribute] - 1))
+        
+        # Correct the offset for universes above 1
+        while offset >= (self.profile["channelCount"] * self.fixturesPerUniverse):
+            offset -= (self.profile["channelCount"] * self.fixturesPerUniverse)
+
         # Debug print
-        print("Intensity of fixture " + str(fixtureNum) + " changed to " + str(newIntensityValue))
+        print("Offset: " + str(offset) + " Fixture: " + str(fixtureNum) + " Attribute: " + attribute + " New Value: " + str(newValue))
+
+        # Update channel with new value
+        self.universe_arrays[universeIndex][offset] = newValue
+
+        # Commit changes to DMX
+        self.update()
+
+
+
+
+    def setIntensity(self, fixtureNum, newIntensityValue):
+        self.setLight(fixtureNum, "dimmer", newIntensityValue)
 
 
 
 
 
     def setPan(self, fixtureNum, newPanValue):
-        # If fixture is in universe 1
-        if fixtureNum < self.fixturesPerUniverse:
-            offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe_arrays[0][offsets["pan"]] = newPanValue
-
-        # Otherwise fixture is in universe 2
-        else:
-            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe_arrays[1][offsets["pan"]] = newPanValue
-        # Commit changes
-        self.update()
-        # Debug print
-        print("Pan of fixture " + str(fixtureNum) + " changed to " + str(newPanValue))
+        self.setLight(fixtureNum, "pan", newPanValue)
 
 
 
 
 
     def setTilt(self, fixtureNum, newTiltValue):
-        # If fixture is in universe 1
-        if fixtureNum < self.fixturesPerUniverse:
-            offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe_arrays[0][offsets["tilt"]] = newTiltValue
-
-        # Otherwise fixture is in universe 2
-        else:
-            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe_arrays[1][offsets["tilt"]] = newTiltValue
-        # Commit changes
-        self.update()
-        # Debug print
-        print("Tilt of fixture " + str(fixtureNum) + " changed to " + str(newTiltValue))
+        self.setLight(fixtureNum, "tilt", newTiltValue)
 
 
 
 
 
     def setZoom(self, fixtureNum, newZoomValue):
-        # If fixture is in universe 1
-        if fixtureNum < self.fixturesPerUniverse:
-            offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe_arrays[0][offsets["zoom"]] = newZoomValue
-
-        # Otherwise fixture is in universe 2
-        else:
-            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe_arrays[1][offsets["zoom"]] = newZoomValue
-        # Commit changes
-        self.update()
-        # Debug print
-        print("Zoom of fixture " + str(fixtureNum) + " changed to " + str(newZoomValue))
+        self.setLight(fixtureNum, "zoom", newZoomValue)
 
 
     
 
 
     def setColor(self, fixtureNum, newRedValue, newGreenValue, newBlueValue, newWhiteValue):
-        # If fixture is in universe 1
-        if fixtureNum < self.fixturesPerUniverse:
-            offsets = self.getOffsetsForFixture(fixtureNum)
-            self.universe_arrays[0][offsets["red"]] = newRedValue
-            self.universe_arrays[0][offsets["green"]] = newGreenValue
-            self.universe_arrays[0][offsets["blue"]] = newBlueValue
-            self.universe_arrays[0][offsets["white"]] = newWhiteValue
-
-        # Otherwise fixture is in universe 2
-        else:
-            offsets = self.getOffsetsForFixture(fixtureNum - self.fixturesPerUniverse)
-            self.universe_arrays[1][offsets["red"]] = newRedValue
-            self.universe_arrays[1][offsets["green"]] = newGreenValue
-            self.universe_arrays[1][offsets["blue"]] = newBlueValue
-            self.universe_arrays[1][offsets["white"]] = newWhiteValue
-        # Commit changes
-        self.update()
+        self.setLight(fixtureNum, "red", newRedValue)
+        self.setLight(fixtureNum, "green", newGreenValue)
+        self.setLight(fixtureNum, "blue", newBlueValue)
+        self.setLight(fixtureNum, "white", newWhiteValue)
 
 
 
 
 
     def autoTarget(self, fixtureNum):
+        # Get configuration
+        atConfig = Config.getConfig()["autoTarget"]
+
         # Set up max values
         maxBrightness = 0
         maxPan = 0
         maxTilt = 0
-        currentTilt = 63
-        # Increment through tilt values in steps of 5
-        while currentTilt <= 127:
-            self.setTilt(fixtureNum, currentTilt)
-            print("Setting tilt to " + str(currentTilt))
+        currentTilt = atConfig["startTilt"]
+        
+        # Increment through tilt values in preconfigured steps
+        while currentTilt <= atConfig["maxTilt"]:
+            self.setLight(fixtureNum, "tilt", currentTilt)
+
             # Increment through pan values in steps of 7
-            for pan in range(1, 256, int(7 + 0.25 * (currentTilt - 63))):
-                self.setPan(fixtureNum, pan)
-                print("Setting pan to " + str(pan))
-                time.sleep(.5)
+            for pan in range(self.profile["channelMin"], self.profile["channelMax"], int(atConfig["panStep"] + 0.25 * (currentTilt - atConfig["startTilt"]))):
+                self.setLight(fixtureNum, "pan", pan)
+
+                # Wait for sensor value to update
+                time.sleep(atConfig["waitSeconds"])
+
+                # Get value from light sensor
                 currentBrightness = int(os.popen('./getsensorvalue').read())
                 print("Current brightness " + str(currentBrightness))
+
+                # Check if new position is brightest yet
                 if currentBrightness > maxBrightness:
                     maxBrightness = currentBrightness
                     maxPan = pan
                     maxTilt = currentTilt
-            currentTilt += 7
+
+            # Advance tilt by configured amount
+            currentTilt += atConfig["tiltStep"]
+
+        # Commit calculated best position
         print("Max values: Brightness: " + str(maxBrightness) + " Pan: " + str(maxPan) + " Tilt: " + str(maxTilt))
-        self.setTilt(fixtureNum, maxTilt)
-        self.setPan(fixtureNum, maxPan)
+        self.setLight(fixtureNum, "tilt", maxTilt)
+        self.setLight(fixtureNum, "pan", maxPan)
 
 
 
 
 
     def reset(self):
-        # Populate both status arrays with zeros (lights are off)
-        for x in range(self.bytesPerPacket):
-            self.universe_arrays[0][x] = self.channelMin
-            self.universe_arrays[1][x] = self.channelMin
+        # Populate all status arrays with zeros (lights are off)
+        for universeNum in range(self.numUniverses):
+            for x in range(self.bytesPerPacket):
+                self.universe_arrays[universeNum][x] = self.profile["channelMin"]
 
-        # All values are reasonable when set to zero except shutter,
-        # which will close the shutter. Open all shutters by setting to self.channelMax
-        shutterIndex = 11
-        while shutterIndex < (self.numPinspots/2)*self.bytesPerFixture:
-            self.universe_arrays[0][shutterIndex] = self.channelMax
-            self.universe_arrays[1][shutterIndex] = self.channelMax
-            shutterIndex += self.bytesPerFixture
-
-        # Send settings to lights
-        for x in range(self.numUniverses):
-            self.universes[x].set(self.universe_arrays[x])
+        # Apply startup procedure from fixture profile
+        startupSteps = self.profile["startupProcedure"]
+        for fixture in range(1, self.numPinspots + 1):
+            for attribute in startupSteps:
+                self.setLight(fixture, attribute, startupSteps[attribute])
 
 
 
-
-
-
-    # percentToByte takes in a percentage (0-100 inclusive)
-    # and returns the corresponding value in (channelMin-channelMax inclusive)
-    def percentToByte(self, percent):
-        percentAsFloat = float(percent/100)
-        return int(percentAsFloat * self.channelMax)
-
-
-
-
-
-    # getOffsetsForFixture returns a dictionary with the bytearray index values for each fixture's parameters
-    def getOffsetsForFixture(self, fixtureNum):
-        # Determine first byte for fixture
-        startByte = (fixtureNum - 1)*self.bytesPerFixture
-        fixtureOffsets = {
-            "pan" : startByte,
-            "tilt" : startByte+2,
-            "red" : startByte+6,
-            "green" : startByte+7,
-            "blue" : startByte+8,
-            "white" : startByte+9,
-            "shutter" : startByte+11,
-            "intensity" : startByte+12,
-            "zoom" : startByte+14
-        }
-        return fixtureOffsets
-
-
-    
 
 
     def getUniverse1Status(self):

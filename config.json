@@ -1,10 +1,18 @@
 {
     "numUniverses" : 2,
     "numFixtures" : 48,
+    "fixtureType" : "zcl-360i_extended",
     "channelsPerPacket" : 512,
     "channelsPerFixture" : 21,
     "fixturesPerUniverse" : 24,
     "enodeIP" : "2.10.10.2",
     "channelMin" : 0,
-    "channelMax" : 255
+    "channelMax" : 255,
+    "autoTarget" : {
+        "startTilt" : 63,
+        "maxTilt" : 127,
+        "waitSeconds" : 0.5,
+        "panStep" : 7,
+        "tiltStep" : 7
+    }
 }

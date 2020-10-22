@@ -1,0 +1,26 @@
+{
+    "brand" : "Elation",
+    "model" : "ZCL-360i",
+    "mode" : "Extended",
+    "channelMin" : 0,
+    "channelMax" : 255,
+    "channelCount" : 21,
+    "channels" : {
+        "pan" : 1,
+        "tilt" : 3,
+        "red" : 7,
+        "green" : 8,
+        "blue" : 9,
+        "white" : 10,
+        "shutter" : 12,
+        "dimmer" : 13,
+        "zoom" : 15
+    },
+    "settings" : {
+        "shutterClosed" : 0,
+        "shutterOpen" : 32
+    },
+    "startupProcedure" : {
+        "shutter" : 11
+    }
+}
