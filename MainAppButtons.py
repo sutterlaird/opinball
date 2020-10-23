@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QPushButton, QFileDialog, QMessageBox
 from PyQt5.QtCore import Qt
 from SensorDialog import SensorDialog
 from Pinspots import Pinspots
+from Config import Config
 
 
 
@@ -17,6 +18,8 @@ class StopButton(QPushButton):
         self.clicked.connect(self.onGoClicked)
         self.setAutoDefault(False)
         self.setFocusPolicy(Qt.NoFocus)
+
+
 
 
 
@@ -46,14 +49,15 @@ class SaveShowButton(QPushButton):
 
 
 
+
+
     def onSaveClicked(self):
         # Open file chooser dialog and get new file name
-        options = QFileDialog.Options()
-        newFileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","Pinspot Show Files (*.suttershow)", options=options)
+        newFileName, _ = QFileDialog.getSaveFileName(self,"Save Show File","","Pinspot Show Files (*.opinball)", options=QFileDialog.Options())
         if newFileName:
-            newSaveFile = open(newFileName, "w+b")
-            newSaveFile.write(self.pinspots.getUniverse1Status())
-            newSaveFile.write(self.pinspots.getUniverse2Status())
+            newSaveFile = open(newFileName + ".opinball", "w+b")
+            for universe in self.pinspots.getUniverses():
+                newSaveFile.write(universe)
 
 
 
@@ -63,6 +67,7 @@ class LoadShowButton(QPushButton):
     def __init__(self):
         super().__init__()
         self.pinspots = Pinspots.getPinspotWorld()
+        self.config = Config.getConfig()
         self.setText("Load Show")
         self.clicked.connect(self.onLoadClicked)
         self.setAutoDefault(False)
@@ -70,17 +75,18 @@ class LoadShowButton(QPushButton):
 
 
 
+
+
     def onLoadClicked(self):
         print("Load clicked")
-        options = QFileDialog.Options()
-        loadFileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","Pinspot Show Files (*.suttershow)", options=options)
+        loadFileName, _ = QFileDialog.getOpenFileName(self,"Select Show File", "","Pinspot Show Files (*.opinball)", options=QFileDialog.Options())
         if loadFileName:
-            print(loadFileName)
+            print("Loading from " + loadFileName)
             newLoadFile = open(loadFileName, "r+b")
-            universe1 = bytearray(newLoadFile.read(self.pinspots.bytesPerPacket))
-            universe2 = bytearray(newLoadFile.read(self.pinspots.bytesPerPacket))
-            self.pinspots.setUniverse1Status(universe1)
-            self.pinspots.setUniverse2Status(universe2)
+            universes = list()
+            for u in range(self.config["numUniverses"]):
+                universes.append(bytearray(newLoadFile.read(self.config["channelsPerPacket"])))
+            self.pinspots.setUniverses(universes)
 
 
 
@@ -95,6 +101,8 @@ class SelectAllButton(QPushButton):
         self.clicked.connect(self.onSelectClicked)
         self.setAutoDefault(False)
         self.setFocusPolicy(Qt.NoFocus)
+
+
 
 
 
@@ -123,6 +131,8 @@ class DeselectAllButton(QPushButton):
 
 
 
+
+
     def onDeselectClicked(self):
         for button in self.buttons:
             button.setChecked(False)
@@ -141,6 +151,8 @@ class SingleMultiButton(QPushButton):
         self.setAutoDefault(False)
         self.setFocusPolicy(Qt.NoFocus)
         self.setChecked(False)
+
+
 
 
 
@@ -165,6 +177,8 @@ class AutoTargetButton(QPushButton):
         self.clicked.connect(self.onTargetClicked)
         self.setAutoDefault(False)
         self.setFocusPolicy(Qt.NoFocus)
+
+
 
 
 
@@ -200,8 +214,9 @@ class PhoneControlButton(QPushButton):
 
 
 
-    def onTargetClicked(self):
 
+
+    def onTargetClicked(self):
         checkedButtonNumbers = list()
         for button in self.buttons:
             if button.isChecked() == True:

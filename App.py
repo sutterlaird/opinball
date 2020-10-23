@@ -4,17 +4,20 @@ from Pinspots import Pinspots
 from FixtureButtonLayout import FixtureButtonLayout
 from ControlsLayout import ControlsLayout
 from MainAppButtons import StopButton, SaveShowButton, LoadShowButton, SingleMultiButton, SelectAllButton, DeselectAllButton, AutoTargetButton, PhoneControlButton
+from Config import Config
 import time
 
 # Initialize application and window
 app = QApplication([])
 window = QWidget()
-window.setStyleSheet(open("style.qss", "r").read())
+window.setStyleSheet(open("style/style.qss", "r").read())
 window.setWindowTitle("OPinBall")
 
 # Create pinspot model
 pinspotWorld = Pinspots.getPinspotWorld()
 
+# Get configuration model
+config = Config.getConfig()
 
 
 
@@ -35,7 +38,7 @@ def buttonClick(buttonNum):
 
 # Create list of buttons, one per fixture
 buttonList = list()
-for x in range(pinspotWorld.numPinspots):
+for x in range(config["numFixtures"]):
     button = FixtureButton(x+1, buttonClick)
     buttonList.append(button)
 

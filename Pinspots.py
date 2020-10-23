@@ -8,14 +8,11 @@ class Pinspots:
 
     instance = None
 
-
     @staticmethod
     def getPinspotWorld():
         if Pinspots.instance == None:
             Pinspots()
         return Pinspots.instance
-
-
 
 
 
@@ -62,8 +59,6 @@ class Pinspots:
 
 
 
-
-
     def __del__(self):
         # Reset lights and stop threads for both universes
         self.reset()
@@ -72,14 +67,10 @@ class Pinspots:
 
 
 
-
-
     def update(self):
         # Set each universe with the current status array
         for x in range(self.numUniverses):
             self.universes[x].set(self.universe_arrays[x])
-
-
 
 
 
@@ -107,42 +98,20 @@ class Pinspots:
 
 
 
-
-    def setIntensity(self, fixtureNum, newIntensityValue):
-        self.setLight(fixtureNum, "dimmer", newIntensityValue)
-
-
-
-
-
-    def setPan(self, fixtureNum, newPanValue):
-        self.setLight(fixtureNum, "pan", newPanValue)
-
-
-
-
-
-    def setTilt(self, fixtureNum, newTiltValue):
-        self.setLight(fixtureNum, "tilt", newTiltValue)
-
-
-
-
-
-    def setZoom(self, fixtureNum, newZoomValue):
-        self.setLight(fixtureNum, "zoom", newZoomValue)
-
-
-    
-
-
     def setColor(self, fixtureNum, newRedValue, newGreenValue, newBlueValue, newWhiteValue):
-        self.setLight(fixtureNum, "red", newRedValue)
-        self.setLight(fixtureNum, "green", newGreenValue)
-        self.setLight(fixtureNum, "blue", newBlueValue)
-        self.setLight(fixtureNum, "white", newWhiteValue)
+        # Verify that fixture supports each channel before changing them
 
+        if "red" in self.profile["channels"]:
+            self.setLight(fixtureNum, "red", newRedValue)
 
+        if "green" in self.profile["channels"]:
+            self.setLight(fixtureNum, "green", newGreenValue)
+
+        if "blue" in self.profile["channels"]:
+            self.setLight(fixtureNum, "blue", newBlueValue)
+
+        if "white" in self.profile["channels"]:
+            self.setLight(fixtureNum, "white", newWhiteValue)
 
 
 
@@ -187,8 +156,6 @@ class Pinspots:
 
 
 
-
-
     def reset(self):
         # Populate all status arrays with zeros (lights are off)
         for universeNum in range(self.numUniverses):
@@ -203,32 +170,16 @@ class Pinspots:
 
 
 
-
-
-    def getUniverse1Status(self):
-        return self.universe_arrays[0]
-
-
-
-
-
-    def getUniverse2Status(self):
-        return self.universe_arrays[1]
+    def getUniverses(self):
+        universes = list()
+        for u in self.universe_arrays:
+            universes.append(u)
+        return universes
 
 
 
-
-
-    def setUniverse1Status(self, universe1new):
-        self.universe_arrays[0] = universe1new
+    def setUniverses(self, universes):
+        for u in range(len(universes)):
+            self.universe_arrays[u] = universes[u]
         self.update()
-        print("successfully loaded universe 1")
-
-
-
-
-
-    def setUniverse2Status(self, universe2new):
-        self.universe_arrays[1] = universe2new
-        self.update()
-        print("successfully loaded universe 2")
+        print("Successfully updated " + str(len(universes)) + " universes")

@@ -3,11 +3,16 @@ from PyQt5.QtCore import Qt
 from Pinspots import Pinspots
 
 
+
+
+
 # GenericControlFader is used to generate an intensity, pan, tilt, or zoom fader
 class GenericControlFader(QVBoxLayout):
     # Constants
     sliderMax = 255
     sliderMin = 0
+
+
 
     def __init__(self, buttons, newType):
         super().__init__()
@@ -53,46 +58,35 @@ class GenericControlFader(QVBoxLayout):
         self.setAlignment(self.slider, Qt.AlignCenter)
         self.setAlignment(self.valueLabel, Qt.AlignCenter)
 
+
+
     # sliderChange handles the movement of the slider,
     # changing the value of the selected fixtures
     def sliderChange(self):
         newValue = self.slider.value()
         self.valueChange(newValue)
 
+
+
     # fullButtonPush is called when the full button is pushed
     def fullButtonPush(self):
         self.slider.setValue(self.slider.maximum())
+
+
 
     # zeroButtonPush is called when the zero button is pushed
     def zeroButtonPush(self):
         self.slider.setValue(self.slider.minimum())
 
+
+
     # valueChange updates the correct value for all checked fixtures
     def valueChange(self, newValue):
         self.valueLabel.setText(str(newValue))
         self.valueLabel.repaint()
-        if self.sliderType == "intensity":
-            for button in self.buttonList:
-                if button.isChecked():
-                    self.pinspots.setIntensity(button.getFixtureNumber(), newValue)
-        elif self.sliderType == "pan":
-            for button in self.buttonList:
-                if button.isChecked():
-                    self.pinspots.setPan(button.getFixtureNumber(), newValue)
-        elif self.sliderType == "tilt":
-            for button in self.buttonList:
-                if button.isChecked():
-                    self.pinspots.setTilt(button.getFixtureNumber(), newValue)
-        elif self.sliderType == "zoom":
-            for button in self.buttonList:
-                if button.isChecked():
-                    self.pinspots.setZoom(button.getFixtureNumber(), newValue)
-
-
-
-
-
-
+        for button in self.buttonList:
+            if button.isChecked():
+                self.pinspots.setLight(button.getFixtureNumber(), self.sliderType, newValue)
 
 
 
@@ -100,19 +94,19 @@ class GenericControlFader(QVBoxLayout):
 
 # ColorControlFader generates a QVBoxLayout with four sliders for color
 class ColorControlFader(QVBoxLayout):
-    # Constants
-    sliderMin = 0
-    sliderMax = 255
-
     def __init__(self, buttons):
         super().__init__()
         self.pinspots = Pinspots.getPinspotWorld()
         self.buttonList = buttons
         self.colorValues = list()
 
+        # Constants
+        self.sliderMin = self.pinspots.profile["channelMin"]
+        self.sliderMax = self.pinspots.profile["channelMax"]
+
         # Populate colorValues with four zeros
         for x in range(4):
-            self.colorValues.append(0)
+            self.colorValues.append(self.sliderMin)
 
         # Create label for section
         faderLabel = QLabel("Color")
@@ -178,6 +172,8 @@ class ColorControlFader(QVBoxLayout):
         self.valueLabel = QLabel("R: 000  G: 000  B: 000  W: 000  Hex: #000000")
         self.addWidget(self.valueLabel)
 
+
+
     # anySliderChange is called whenever a slider is moved
     def anySliderChange(self):
         self.colorValues[0] = self.redSlider.value()
@@ -187,11 +183,13 @@ class ColorControlFader(QVBoxLayout):
         self.update()
 
 
+
     def zero(self):
         self.redSlider.setValue(self.redSlider.minimum())
         self.greenSlider.setValue(self.greenSlider.minimum())
         self.blueSlider.setValue(self.blueSlider.minimum())
         self.whiteSlider.setValue(self.whiteSlider.minimum())
+
 
 
     # Update updates the color value label and pushes the color changes to the fixtures
